@@ -1,15 +1,20 @@
 "use strict";
 const readline = require('readline/promises');
-const { consultarIA } = require('../utils/geminiService.js');
+const { inicializarModelo, consultarIA } = require('../utils/localLLMService.js');
 
 const consola = readline.createInterface({ input: process.stdin, output: process.stdout });
 
 async function iniciarChat() {
     console.log("==========================================");
-    console.log("🚀 TERMINAL CONECTADA A GEMINI AI");
+    console.log("🚀 TERMINAL CONECTADA A LLM LOCAL (UniBot)");
     console.log("==========================================");
+
+    // Cargamos el modelo en memoria antes de iniciar la conversación
+    await inicializarModelo();
+    console.log("✅ Modelo cargado y listo.\n");
+
     let nombre = await consola.question("👤 Identifícate: ");
-    console.log(`\n🤖 ¡Hola, ${nombre}! Soy un asistente de IA. Escribe 'salir' para desconectarme.\n`);
+    console.log(`\n🤖 ¡Hola, ${nombre}! Soy UniBot (ejecutándose localmente). Escribe 'salir' para desconectarme.\n`);
     return nombre;
 }
 
@@ -19,17 +24,17 @@ async function cicloChat(nombre) {
     while (mensaje.toLowerCase() !== "salir") {
         mensaje = await consola.question(`${nombre} > `);
         
-        if (mensaje.toLowerCase() !== "salir") {
+        if (mensaje.trim() !== "" && mensaje.toLowerCase() !== "salir") {
             // Animación visual simple en consola mientras esperamos
             process.stdout.write("🤖 Pensando..."); 
             
-            // Aquí ocurre la magia: esperamos la respuesta de la API externa
-            let respuestaGemini = await consultarIA(mensaje);
+            // Ejecutamos la inferencia local basada en el contexto
+            let respuestaLocal = await consultarIA(mensaje);
             
             // Borramos el "Pensando..." e imprimimos la respuesta real
-            process.stdout.clearLine();
+            process.stdout.clearLine(0);
             process.stdout.cursorTo(0);
-            console.log(`🤖 Gemini: ${respuestaGemini}\n`);
+            console.log(`🤖 UniBot: ${respuestaLocal}\n`);
         }
     }
 }
